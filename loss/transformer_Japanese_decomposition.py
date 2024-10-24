@@ -425,7 +425,7 @@ class Encoder(nn.Module):
 class Transformer_module(nn.Module):
     def __init__(self):
         super(Transformer_module, self).__init__()
-        word_n_class = get_alphabet_len()  # == 10(Eng)  == 5(Chi)
+        word_n_class = get_alphabet_len()
         self.embedding_word = Embeddings(512, word_n_class)  # 512次元に変換
         self.pe = PositionalEncoding(d_model=512, dropout=0.1, max_len=7000)
 
@@ -444,7 +444,11 @@ class Transformer(nn.Module):
         self.module = Transformer_module()
 
     def forward(self, image, text_length, text_input, test=False, attention_map=None):
-
+        """
+        image : image
+        text_length : 各ラベルのstrokeの個数
+        text_input : strokeの情報 (2次元配列)
+        """
         if image.shape[1] == 4:
             R = image[:, 0:1, :, :]
             G = image[:, 1:2, :, :]
@@ -469,7 +473,6 @@ class Transformer(nn.Module):
         correct_list = []
 
         if not test:
-
             total_length = torch.sum(text_length).data
             probs_res = torch.zeros(total_length, get_alphabet_len()).type_as(word_decoder_result.data)  # 確率分布
             start = 0

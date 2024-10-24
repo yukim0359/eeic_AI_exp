@@ -1,5 +1,6 @@
 *.pth
 mydata
+data
 ckpt
 __pycache__
 visualization

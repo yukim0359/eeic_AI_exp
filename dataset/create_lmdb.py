@@ -181,41 +181,105 @@ def createDataset_inpainting(outputPath, imagePathList, labelList):
     print('Created dataset with %d samples' % nSamples)
 
 
-def createDataset(outputPath, imagePathList, labelList, lexiconList=None, checkValid=True):
+# def createDataset(outputPath, imagePathList, labelList, lexiconList=None, checkValid=True):
+#     """
+#   Create LMDB dataset for CRNN training.
+#   ARGS:
+#       outputPath    : LMDB output path
+#       imagePathList : list of image path
+#       labelList     : list of corresponding groundtruth texts
+#       lexiconList   : (optional) list of lexicon lists
+#       checkValid    : if true, check the validity of every image
+#   """
+#     assert (len(imagePathList) == len(labelList))
+#     nSamples = len(imagePathList)
+#     if not os.path.exists(outputPath):
+#         os.mkdir(outputPath)
+#     env = lmdb.open(outputPath, map_size=1099511627776)
+#     cache = {}
+#     cnt = 1
+#     for i in range(nSamples):
+#         imagePath = imagePathList[i]
+#         label = labelList[i]
+#         if len(label) == 0:
+#             continue
+#         if not os.path.exists(imagePath):
+#             print('%s does not exist' % imagePath)
+#             continue
+#         with open(imagePath, 'rb') as f:
+#             imageBin = f.read()
+#         if checkValid:
+#             if not checkImageIsValid(imageBin):
+#                 print('%s is not a valid image' % imagePath)
+#                 continue
+
+#         imageKey = 'image-%09d' % cnt
+#         labelKey = 'label-%09d' % cnt
+#         cache[imageKey] = imageBin
+
+#         cache[labelKey] = label.encode()
+#         if lexiconList:
+#             lexiconKey = 'lexicon-%09d' % cnt
+#             cache[lexiconKey] = ' '.join(lexiconList[i])
+#         # embed()
+#         if cnt % 1000 == 0:
+#             writeCache(env, cache)
+#             cache = {}
+#             print('Written %d / %d' % (cnt, nSamples))
+#         cnt += 1
+#     nSamples = cnt - 1
+#     cache['num-samples'] = str(nSamples).encode()
+#     writeCache(env, cache)
+#     print('Created dataset with %d samples' % nSamples)
+
+
+def createDataset(outputPath, hrPathList, lrPathList, labelList, lexiconList=None, checkValid=True):
     """
   Create LMDB dataset for CRNN training.
   ARGS:
       outputPath    : LMDB output path
-      imagePathList : list of image path
+      hrPathList    : list of hr image path
+      lrPathList    : list of lr image path
       labelList     : list of corresponding groundtruth texts
       lexiconList   : (optional) list of lexicon lists
       checkValid    : if true, check the validity of every image
   """
-    assert (len(imagePathList) == len(labelList))
-    nSamples = len(imagePathList)
+    assert (len(hrPathList) == len(labelList) and len(lrPathList) == len(labelList))
+    nSamples = len(hrPathList)
     if not os.path.exists(outputPath):
         os.mkdir(outputPath)
     env = lmdb.open(outputPath, map_size=1099511627776)
     cache = {}
     cnt = 1
     for i in range(nSamples):
-        imagePath = imagePathList[i]
+        hrPath = hrPathList[i]
+        lrPath = lrPathList[i]
         label = labelList[i]
         if len(label) == 0:
             continue
-        if not os.path.exists(imagePath):
-            print('%s does not exist' % imagePath)
+        if not os.path.exists(hrPath):
+            print('%s does not exist' % hrPath)
             continue
-        with open(imagePath, 'rb') as f:
-            imageBin = f.read()
+        if not os.path.exists(lrPath):
+            print('%s does not exist' % lrPath)
+            continue
+        with open(hrPath, 'rb') as f:
+            hrBin = f.read()
+        with open(lrPath, 'rb') as f:
+            lrBin = f.read()
         if checkValid:
-            if not checkImageIsValid(imageBin):
-                print('%s is not a valid image' % imagePath)
+            if not checkImageIsValid(hrBin):
+                print('%s is not a valid image' % hrPath)
+                continue
+            if not checkImageIsValid(lrBin):
+                print('%s is not a valid image' % lrPath)
                 continue
 
-        imageKey = 'image-%09d' % cnt
+        hrKey = 'image_hr-%09d' % cnt
+        lrKey = 'image_lr-%09d' % cnt
         labelKey = 'label-%09d' % cnt
-        cache[imageKey] = imageBin
+        cache[hrKey] = hrBin
+        cache[lrKey] = lrBin
 
         cache[labelKey] = label.encode()
         if lexiconList:
@@ -231,6 +295,7 @@ def createDataset(outputPath, imagePathList, labelList, lexiconList=None, checkV
     cache['num-samples'] = str(nSamples).encode()
     writeCache(env, cache)
     print('Created dataset with %d samples' % nSamples)
+
 
 
 def create_800k():
@@ -507,8 +572,70 @@ def create_from_lmdb():
 
 
 if __name__ == "__main__":
-    
+    outputPath_train       = "output/train"
+    outputPath_test_easy   = "output/test/easy"
+    outputPath_test_medium = "output/test/medium"
+    outputPath_test_hard   = "output/test/hard"
 
+    HRPathList_train       = []
+    HRPathList_test_easy   = []
+    HRPathList_test_medium = []
+    HRPathList_test_hard   = []
+
+    LRPathList_train       = []
+    LRPathList_test_easy   = []
+    LRPathList_test_medium = []
+    LRPathList_test_hard   = []
+
+    labelList_train       = []
+    labelList_test_easy   = []
+    labelList_test_medium = []
+    labelList_test_hard   = []
+
+    for i in range(1, 10001):
+        filename_HR = "data/HR/" + str(i) + ".png"
+        filename_label = "data/label/" + str(i) + ".txt"
+
+        if i % 5 == 0:  # test用
+            with open(filename_label) as f:
+                label = f.read().strip()
+            
+            if i % 3 == 0: # easyを採用
+                labelList_test_easy.append(label)
+                filename_LR = "data/easy/" + str(i) + ".png"
+                HRPathList_test_easy.append(filename_HR)
+                LRPathList_test_easy.append(filename_LR)
+            elif i % 3 == 1: # mediumを採用
+                labelList_test_medium.append(label)
+                filename_LR = "data/medium/" + str(i) + ".png"
+                HRPathList_test_medium.append(filename_HR)
+                LRPathList_test_medium.append(filename_LR)
+            else: # hardを採用
+                labelList_test_hard.append(label)
+                filename_LR = "data/hard/" + str(i) + ".png"
+                HRPathList_test_hard.append(filename_HR)
+                LRPathList_test_hard.append(filename_LR)
+
+        else:  # train用
+            with open(filename_label) as f:
+                label = f.read().strip()
+            labelList_train.append(label)
+
+            if i % 3 == 0: # easyを採用
+                filename_LR = "data/easy/" + str(i) + ".png"
+            elif i % 3 == 1: # mediumを採用
+                filename_LR = "data/medium/" + str(i) + ".png"
+            else: # hardを採用
+                filename_LR = "data/hard/" + str(i) + ".png"
+            
+            HRPathList_train.append(filename_HR)
+            LRPathList_train.append(filename_LR)
+
+
+    createDataset(outputPath_train, HRPathList_train, LRPathList_train, labelList_train)
+    createDataset(outputPath_test_easy, HRPathList_test_easy, LRPathList_test_easy, labelList_test_easy)
+    createDataset(outputPath_test_medium, HRPathList_test_medium, LRPathList_test_medium, labelList_test_medium)
+    createDataset(outputPath_test_hard, HRPathList_test_hard, LRPathList_test_hard, labelList_test_hard)
 
     # start_time = time.time()
     # create_from_lmdb()
