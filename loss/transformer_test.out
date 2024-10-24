@@ -1,8 +1,0 @@
-torch.Size([32, 1024, 8, 32])
-torch.Size([2, 3, 512])
-torch.Size([32, 10, 1024])
-torch.Size([32, 16, 10, 256])
-build success!
-probs_res : torch.Size([11, 10])
-attntion_map : torch.Size([4, 16, 4, 256])
-correct_list : [False, False, False, False]
