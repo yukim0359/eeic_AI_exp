@@ -48,7 +48,7 @@ def buf2PIL(txn, key, type='RGB'):
 
 
 class lmdbDataset(Dataset):
-    def __init__(self, root=None, voc_type='upper', max_len=31, test=True):
+    def __init__(self, root=None, voc_type='japanese', max_len=31, test=True):
         super(lmdbDataset, self).__init__()
         self.env = lmdb.open(
             root,
@@ -92,7 +92,7 @@ class lmdbDataset(Dataset):
 
 
 class lmdbDataset_real(Dataset):
-    def __init__(self, root=None, voc_type='upper', max_len=100, test=False):
+    def __init__(self, root=None, voc_type='japanese', max_len=100, test=False):
         super(lmdbDataset_real, self).__init__()
         self.env = lmdb.open(
             root,
@@ -153,7 +153,7 @@ class resizeNormalize(object):
 
 
 class lmdbDataset_mix(Dataset):
-    def __init__(self, root=None, voc_type='upper', max_len=100, test=False):
+    def __init__(self, root=None, voc_type='japanese', max_len=100, test=False):
         super(lmdbDataset_mix, self).__init__()
         self.env = lmdb.open(
             root,

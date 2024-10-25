@@ -9,13 +9,13 @@ TRAIN:
   batch_size: 512
   width: 128
   height: 32
-  epochs: 5
+  epochs: 1
   cuda: True
   ngpu: 4
   workers: 8
   resume: ''
   ckpt_dir: './ckpt/'
-  voc_type: 'all'
+  voc_type: 'japanese'  # もともとは'all'
   saveInterval: 200
   displayInterval: 50
   adadelta: False

@@ -218,9 +218,10 @@ class TextSR(base.TextBase):
                 # self.logging.info('{} | {} | {} | {}\n'.format(write_line, pred, str_filt(target, 'lower'),
                 #                                      pred == str_filt(target, 'lower')))
                 # write_line += 1
-                if pred == str_filt(target, 'lower'):
+                if pred == str_filt(target, 'japanese'):
                     n_correct += 1
                 cnt += 1
+                print('pred :', pred, 'target :', target)
 
             sum_images += val_batch_size
             torch.cuda.empty_cache()
