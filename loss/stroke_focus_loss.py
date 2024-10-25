@@ -7,7 +7,7 @@ import random
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
-from loss.transformer_english_decomposition import Transformer
+from loss.transformer_Japanese_decomposition import Transformer
 
 def to_gray_tensor(tensor):
     R = tensor[:, 0:1, :, :]
@@ -205,9 +205,11 @@ class StrokeFocusLoss(nn.Module):
             time1 = time.time()
             # label = [str_filt(i, 'lower')+'-' for i in label]
             length_tensor, input_tensor, text_gt = self.label_stroke_encoder(label)
-            hr_pred, word_attention_map_gt, hr_correct_list = self.transformer(to_gray_tensor(hr_img), length_tensor,
+            # hr_pred, word_attention_map_gt, hr_correct_list = self.transformer(to_gray_tensor(hr_img), length_tensor,
+            hr_pred, word_attention_map_gt, hr_correct_list = self.transformer(hr_img, length_tensor,
                                                                           input_tensor, test=False)
-            sr_pred, word_attention_map_pred, sr_correct_list = self.transformer(to_gray_tensor(sr_img), length_tensor,
+            # sr_pred, word_attention_map_pred, sr_correct_list = self.transformer(to_gray_tensor(sr_img), length_tensor,
+            sr_pred, word_attention_map_pred, sr_correct_list = self.transformer(sr_img, length_tensor,
                                                                             input_tensor, test=False)
 
             # select correct

@@ -422,9 +422,9 @@ class Encoder(nn.Module):
         return x
 
 
-class Transformer_module(nn.Module):
+class Transformer(nn.Module):
     def __init__(self):
-        super(Transformer_module, self).__init__()
+        super(Transformer, self).__init__()
         word_n_class = get_alphabet_len()
         self.embedding_word = Embeddings(512, word_n_class)  # 512次元に変換
         self.pe = PositionalEncoding(d_model=512, dropout=0.1, max_len=7000)
@@ -436,12 +436,6 @@ class Transformer_module(nn.Module):
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
-
-
-class Transformer(nn.Module):
-    def __init__(self):
-        super(Transformer, self).__init__()
-        self.module = Transformer_module()
 
     def forward(self, image, text_length, text_input, test=False, attention_map=None):
         """
@@ -456,19 +450,19 @@ class Transformer(nn.Module):
             image = 0.299 * R + 0.587 * G + 0.114 * B
 
         # 1.encoder
-        conv_feature = self.module.encoder(image) # batch, 1024, 8, 32  [b,c,h,w]？
+        conv_feature = self.encoder(image) # batch, 1024, 8, 32  [b,c,h,w]？
 
         # 2.embedding
-        text_embedding = self.module.embedding_word_with_upperword(text_input) # batch, text_max_length, 512
-        postion_embedding = self.module.pe(torch.zeros(text_embedding.shape).cuda()).cuda() # batch, text_max_length, 512
+        text_embedding = self.embedding_word(text_input) # batch, text_max_length, 512
+        postion_embedding = self.pe(torch.zeros(text_embedding.shape).cuda()).cuda() # batch, text_max_length, 512
         text_input_with_pe = torch.cat([text_embedding, postion_embedding], 2) # batch, text_max_length, 1024
         batch, seq_len, _ = text_input_with_pe.shape
 
         # 3.decoder
-        text_input_with_pe, word_attention_map = self.module.decoder(text_input_with_pe, conv_feature)
+        text_input_with_pe, word_attention_map = self.decoder(text_input_with_pe, conv_feature)
 
         # 1024次元からword_n_class個に分類
-        word_decoder_result = self.module.generator_word_with_upperword(text_input_with_pe)
+        word_decoder_result = self.generator_word(text_input_with_pe)
 
         correct_list = []
 

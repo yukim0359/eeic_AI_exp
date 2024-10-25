@@ -1,5 +1,7 @@
 *.pth
 mydata
+mydata_old
+original_data
 data
 ckpt
 __pycache__

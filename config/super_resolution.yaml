@@ -2,8 +2,9 @@ MODEL:
 
 TRAIN:
   train_data_dir: [
-    './dataset/mydata/train1',
-    './dataset/mydata/train2',
+    # './dataset/mydata/train1',
+    # './dataset/mydata/train2',
+    './dataset/mydata/train'
   ]
   batch_size: 512
   width: 128
