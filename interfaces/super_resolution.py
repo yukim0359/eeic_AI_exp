@@ -26,6 +26,7 @@ from torch.autograd import Variable
 from utils.meters import AverageMeter
 from utils.metrics import get_str_list, Accuracy
 from torch.utils.tensorboard import SummaryWriter
+import matplotlib.pyplot as plt
 
 to_pil = transforms.ToPILImage()
 
@@ -52,7 +53,10 @@ class TextSR(base.TextBase):
         best_acc = 0
         converge_list = []
 
+        loss_list = []
+
         for epoch in range(cfg.epochs):
+            loss_per_epoch = 0
             for j, data in (enumerate(train_loader)):
                 model.train()
                 for p in model.parameters():
@@ -135,6 +139,20 @@ class TextSR(base.TextBase):
                     best_model_info = {'accuracy': best_model_acc, 'psnr': best_model_psnr, 'ssim': best_model_ssim}
                     self.save_checkpoint(model, epoch, iters, best_history_acc, best_model_info, False, converge_list,
                                          self.args.exp_name)
+                    
+                loss_per_epoch = loss_im
+            
+            loss_list.append(loss_per_epoch)
+            with open('checkpoint/' + self.args.exp_name + '/loss.txt', 'w') as f:
+                f.writelines([str(epoch + 1), ' ', str(loss_per_epoch.to('cpu').item()), '\n'])
+        
+        # lossのグラフを描画
+        plt.plot(loss_list)
+        plt.xlabel("epochs")
+        plt.ylabel("loss")
+        plt.savefig('checkpoint/' + self.args.exp_name + '/loss.png')
+
+        print('train finished!')
 
 
     def get_crnn_pred(self, outputs):
