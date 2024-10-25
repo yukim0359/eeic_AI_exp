@@ -143,7 +143,7 @@ class TextSR(base.TextBase):
                 loss_per_epoch = loss_im
             
             loss_list.append(loss_per_epoch)
-            with open('checkpoint/' + self.args.exp_name + '/loss.txt', 'w') as f:
+            with open('checkpoint/' + self.args.exp_name + '/loss.txt', 'a') as f:
                 f.writelines([str(epoch + 1), ' ', str(loss_per_epoch.to('cpu').item()), '\n'])
         
         # lossのグラフを描画
