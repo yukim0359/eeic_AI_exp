@@ -16,3 +16,4 @@ scripts
 .DS_Store
 myenv
 *.out
+requirement.txt
