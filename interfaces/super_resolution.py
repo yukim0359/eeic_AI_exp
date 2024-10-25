@@ -349,7 +349,7 @@ class TextSR(base.TextBase):
                                                                             index + sum_images, label_strs[index], pred_str_sr[index]))
 
                 for pred, target in zip(pred_str_sr, label_strs):
-                    if str_filt(pred, 'lower') == str_filt(target, 'lower'):
+                    if str_filt(pred, 'japanese') == str_filt(target, 'japanese'):
                         n_correct += 1
                 sum_images += val_batch_size
                 torch.cuda.empty_cache()
