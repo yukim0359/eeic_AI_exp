@@ -26,6 +26,7 @@ from torch.autograd import Variable
 from utils.meters import AverageMeter
 from utils.metrics import get_str_list, Accuracy
 from torch.utils.tensorboard import SummaryWriter
+from OCR_Japanese.my_ocr_japanease import predict_from_image
 import matplotlib.pyplot as plt
 
 to_pil = transforms.ToPILImage()
@@ -209,7 +210,14 @@ class TextSR(base.TextBase):
             recognizer_dict_sr = self.parse_crnn_data(images_sr[:, :3, :, :])
             recognizer_output_sr = recognizer(recognizer_dict_sr)
             outputs_sr = recognizer_output_sr.permute(1, 0, 2).contiguous()
-            predict_result_sr = self.get_crnn_pred(outputs_sr)
+
+            # image_srをnp.arrayに変換してからpredict_from_imageに渡す
+            tmp = images_sr.permute(0, 2, 3, 1).contiguous()
+            tmp = tmp.to('cpu').detach().numpy()
+            rgb = (tmp*255).astype(np.uint8)
+            predict_result_sr = predict_from_image(rgb)
+            # print(predict_result_sr)
+
             metric_dict['images_and_labels'].append(
                 (images_hr.detach().cpu(), images_sr.detach().cpu(), label_strs, predict_result_sr))
 
